@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react';
 import {defineConfig} from 'vite';
 import {VitePWA} from 'vite-plugin-pwa';
 
-const THEME_COLOR = '#1c1917';
-const BACKGROUND_COLOR = '#fafaf9';
+const THEME_COLOR = '#f2f3f8';
+const BACKGROUND_COLOR = '#f2f3f8';
 const DESCRIPTION =
   'Minimalistyczna aplikacja do planowania jednego celu dziennie i śledzenia jego kroków.';
 
@@ -45,6 +45,18 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
+        // Czcionki z Google Fonts zapisujemy w pamięci podręcznej, żeby działały offline.
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: {maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365},
+              cacheableResponse: {statuses: [0, 200]},
+            },
+          },
+        ],
       },
     }),
   ],

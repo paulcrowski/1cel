@@ -6,17 +6,13 @@ export const Header: React.FC = () => {
   const todayLabel = formatLongDate(new Date());
 
   return (
-    <header className="w-full py-4 px-4 sm:px-6 border-b border-stone-200/80 bg-stone-50/50">
-      <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 rounded-lg bg-stone-900 text-white shrink-0">
-            <Target className="w-5 h-5" />
-          </div>
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-stone-900 truncate">
-            Jeden cel dziennie
-          </h1>
+    <header className="w-full pt-6 pb-2 px-5">
+      <div className="max-w-xl mx-auto">
+        <div className="flex items-center gap-2">
+          <Target className="w-5 h-5 text-accent shrink-0" aria-hidden="true" />
+          <h1 className="font-display text-lg font-bold tracking-tight">Jeden cel dziennie</h1>
         </div>
-        <span className="text-xs sm:text-sm text-stone-500 text-right">{todayLabel}</span>
+        <p className="text-sm text-muted pl-7">{todayLabel}</p>
       </div>
     </header>
   );

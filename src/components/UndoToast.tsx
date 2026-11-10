@@ -18,13 +18,13 @@ export const UndoToast: React.FC<UndoToastProps> = ({ notice, onUndo, onDismiss 
   return (
     <div
       role="status"
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 pl-4 pr-2 py-2 rounded-xl bg-stone-900 text-white text-sm shadow-lg"
+      className="fixed bottom-5 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 pl-5 pr-2 py-2 rounded-2xl bg-ink text-paper text-sm shadow-lg"
     >
       <span>{notice.message}</span>
       <button
         type="button"
         onClick={onUndo}
-        className="px-3 py-1.5 rounded-lg text-xs font-semibold underline underline-offset-2 hover:bg-white/10 transition-colors cursor-pointer"
+        className="px-3 py-2 rounded-xl text-sm font-bold underline underline-offset-4 cursor-pointer focus-visible:outline-paper"
       >
         Cofnij
       </button>

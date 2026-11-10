@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { CheckCircle2, Circle, Plus, Check, Trophy, Edit3, Trash2, Pencil } from 'lucide-react';
+import { Plus, Check, Trophy, Edit3, Trash2, Pencil } from 'lucide-react';
 import { DailyGoal, Step } from '../types';
 import { MAX_STEPS } from '../constants';
 import { createId } from '../utils/ids';
@@ -20,7 +20,7 @@ interface StepEdit {
 }
 
 const STEP_ACTION_CLASS =
-  'p-1 text-stone-400 rounded transition-all md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100';
+  'p-2 text-faint rounded-lg transition-colors md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100';
 
 export const GoalCard: React.FC<GoalCardProps> = ({
   goal,
@@ -105,110 +105,97 @@ export const GoalCard: React.FC<GoalCardProps> = ({
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+    <section className="w-full space-y-6">
       {isFromPastDay && (
-        <div className="px-6 py-3 bg-amber-50 border-b border-amber-200 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900">
+        <div className="px-4 py-3 rounded-2xl bg-warn-soft text-warn-ink flex flex-wrap items-center justify-between gap-2 text-sm">
           <span>Ten cel jest z dnia {formatShortDate(goal.date)}.</span>
           <button
             type="button"
             onClick={() => onUpdateGoal({ ...goal, date: getTodayIso() })}
-            className="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 font-semibold transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-lg bg-warn-ink text-warn-soft font-semibold text-sm cursor-pointer"
           >
             Przenieś na dziś
           </button>
         </div>
       )}
 
-      <div className="p-6 sm:p-8 space-y-6">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <span className="text-xs font-semibold uppercase tracking-wider text-stone-400 block mb-1">
-              Dzisiejszy cel
-            </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900 leading-snug break-words">
-              {goal.title}
-            </h2>
-          </div>
+      {/* Płyta z celem dnia — jedyny mocny element ekranu. */}
+      <div className="rounded-[28px] bg-accent text-on-accent p-6 sm:p-8">
+        <div className="flex justify-end">
           <button
             onClick={onEditGoal}
-            className="shrink-0 inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-900 px-2 py-1 rounded-md hover:bg-stone-200/60 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full bg-on-accent/15 hover:bg-on-accent/25 transition-colors cursor-pointer focus-visible:outline-on-accent"
             title="Edytuj cel i kroki"
           >
-            <Edit3 className="w-3.5 h-3.5" />
+            <Edit3 className="w-4 h-4" />
             <span>Edytuj cel</span>
           </button>
         </div>
 
+        <h2 className="mt-4 font-display text-[2rem] sm:text-5xl font-bold leading-[1.05] tracking-tight break-words">
+          {goal.title}
+        </h2>
+
         {hasSteps && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
+          <div className="mt-8">
+            <div
+              role="progressbar"
+              aria-label="Postęp celu"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progressPercent}
+              className="flex gap-1.5"
+            >
+              {goal.steps.map((step) => (
+                <span
+                  key={step.id}
+                  className={`h-2 flex-1 rounded-full transition-colors duration-300 ${
+                    step.completed ? 'bg-on-accent' : 'bg-on-accent/25'
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="mt-3 flex items-center justify-between text-sm">
               {isAllDone ? (
-                <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700">
-                  <Trophy className="w-3.5 h-3.5" />
+                <span className="inline-flex items-center gap-1.5 font-semibold">
+                  <Trophy className="w-4 h-4" />
                   Wszystkie kroki wykonane!
                 </span>
               ) : (
-                <span className="text-stone-500">
+                <span className="opacity-85">
                   Kroki: {completedCount} z {totalCount}
                 </span>
               )}
-              <span className="text-stone-900 font-bold font-mono">{progressPercent}%</span>
-            </div>
-            <div className="w-full bg-stone-200 rounded-full h-1.5 overflow-hidden">
-              <div
-                className={`h-1.5 rounded-full transition-all duration-300 ease-out ${
-                  isAllDone ? 'bg-emerald-600' : 'bg-stone-900'
-                }`}
-                style={{ width: `${progressPercent}%` }}
-              ></div>
+              <span className="font-display font-bold text-lg">{progressPercent}%</span>
             </div>
           </div>
         )}
+      </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-              {hasSteps ? 'Lista kroków' : 'Kroki (opcjonalne)'}
-            </h3>
-            {!isAddingStep && totalCount < MAX_STEPS && (
-              <button
-                onClick={() => setIsAddingStep(true)}
-                className="inline-flex items-center gap-1 text-xs font-medium text-stone-700 hover:text-stone-900 transition-colors cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Dodaj krok</span>
-              </button>
-            )}
-          </div>
-
-          <div className="space-y-2">
+      <div>
+        {hasSteps && (
+          <ul className="divide-y divide-line">
             {goal.steps.map((step, index) => {
               const isEditingThis = editing?.id === step.id;
               return (
-                <div
+                <li
                   key={step.id}
                   onClick={() => !isEditingThis && handleToggleStep(step.id)}
-                  className={`group flex items-start gap-3 p-3.5 rounded-xl border transition-all select-none ${
+                  className={`group flex items-center gap-3 py-3.5 select-none ${
                     isEditingThis ? '' : 'cursor-pointer'
-                  } ${
-                    step.completed
-                      ? 'bg-stone-50 border-stone-200 text-stone-400'
-                      : 'bg-white border-stone-200 hover:border-stone-300 text-stone-900 shadow-2xs'
                   }`}
                 >
                   <button
                     type="button"
                     aria-pressed={step.completed}
                     aria-label={`${step.completed ? 'Cofnij wykonanie' : 'Oznacz jako wykonany'}: ${step.text}`}
-                    className={`mt-0.5 shrink-0 transition-colors ${
-                      step.completed ? 'text-emerald-600' : 'text-stone-300 group-hover:text-stone-400'
+                    className={`shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${
+                      step.completed
+                        ? 'bg-accent border-accent text-on-accent'
+                        : 'border-faint group-hover:border-accent'
                     }`}
                   >
-                    {step.completed ? (
-                      <CheckCircle2 className="w-5 h-5" />
-                    ) : (
-                      <Circle className="w-5 h-5" />
-                    )}
+                    {step.completed && <Check className="w-4 h-4 stroke-[3]" />}
                   </button>
 
                   {isEditingThis ? (
@@ -226,16 +213,15 @@ export const GoalCard: React.FC<GoalCardProps> = ({
                       }}
                       onBlur={() => finishEdit(true)}
                       aria-label={`Edytuj tekst kroku ${index + 1}`}
-                      className="flex-1 min-w-0 px-2 py-0.5 -my-0.5 text-sm rounded-md border border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-900 text-stone-900 select-text"
+                      className="flex-1 min-w-0 px-3 py-1.5 text-base rounded-lg border border-line select-text"
                       autoFocus
                     />
                   ) : (
                     <span
-                      className={`text-sm font-medium flex-1 leading-relaxed break-words min-w-0 ${
-                        step.completed ? 'line-through text-stone-400' : 'text-stone-800'
+                      className={`text-[1.0625rem] flex-1 leading-snug break-words min-w-0 ${
+                        step.completed ? 'line-through text-muted' : 'text-ink'
                       }`}
                     >
-                      <span className="text-stone-400 font-mono text-xs mr-2">{index + 1}.</span>
                       {step.text}
                     </span>
                   )}
@@ -247,11 +233,11 @@ export const GoalCard: React.FC<GoalCardProps> = ({
                         e.stopPropagation();
                         setEdit({ id: step.id, text: step.text });
                       }}
-                      className={`${STEP_ACTION_CLASS} hover:text-stone-900`}
+                      className={`${STEP_ACTION_CLASS} hover:text-ink`}
                       title="Edytuj ten krok"
                       aria-label={`Edytuj krok: ${step.text}`}
                     >
-                      <Pencil className="w-3.5 h-3.5" />
+                      <Pencil className="w-4 h-4" />
                     </button>
                   )}
 
@@ -261,68 +247,79 @@ export const GoalCard: React.FC<GoalCardProps> = ({
                       e.stopPropagation();
                       handleDeleteStep(step.id);
                     }}
-                    className={`${STEP_ACTION_CLASS} hover:text-rose-600`}
+                    className={`${STEP_ACTION_CLASS} hover:text-danger`}
                     title="Usuń ten krok"
                     aria-label={`Usuń krok: ${step.text}`}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
+        )}
 
-          {isAddingStep && (
-            <form onSubmit={handleAddStepSubmit} className="flex gap-2 pt-1">
-              <input
-                type="text"
-                value={newStepText}
-                onChange={(e) => setNewStepText(e.target.value)}
-                placeholder="Wpisz kolejny mały krok..."
-                className="flex-1 min-w-0 px-3.5 py-2 text-sm rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-900"
-                autoFocus
-              />
-              <button
-                type="submit"
-                className="px-3.5 py-2 bg-stone-900 text-white rounded-xl text-xs font-medium hover:bg-stone-800 transition-colors cursor-pointer"
-              >
-                Dodaj
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAddingStep(false);
-                  setNewStepText('');
-                }}
-                className="px-3 py-2 bg-stone-100 text-stone-600 rounded-xl text-xs font-medium hover:bg-stone-200 transition-colors cursor-pointer"
-              >
-                Anuluj
-              </button>
-            </form>
-          )}
-        </div>
-
-        <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={() => onCompleteGoal(goal)}
-            className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-colors cursor-pointer text-sm shadow-sm ${
-              isAllDone
-                ? 'bg-emerald-700 text-white hover:bg-emerald-800'
-                : 'bg-stone-900 text-white hover:bg-stone-800'
-            }`}
-          >
-            <Check className="w-4 h-4 stroke-[3]" />
-            <span>Zrobione (Zamknij dzień)</span>
-          </button>
-
-          <button
-            onClick={onResetGoal}
-            className="px-4 py-3 rounded-xl border border-stone-200 text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium transition-colors cursor-pointer text-center"
-          >
-            Nowy cel
-          </button>
-        </div>
+        {isAddingStep ? (
+          <form onSubmit={handleAddStepSubmit} className="flex gap-2 pt-3">
+            <input
+              type="text"
+              value={newStepText}
+              onChange={(e) => setNewStepText(e.target.value)}
+              placeholder="Wpisz kolejny mały krok..."
+              className="flex-1 min-w-0 px-4 py-3 text-base rounded-xl border border-line"
+              autoFocus
+            />
+            <button
+              type="submit"
+              className="px-4 py-3 bg-accent text-on-accent rounded-xl text-sm font-semibold cursor-pointer"
+            >
+              Dodaj
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsAddingStep(false);
+                setNewStepText('');
+              }}
+              className="px-3 py-3 text-muted rounded-xl text-sm font-medium cursor-pointer"
+            >
+              Anuluj
+            </button>
+          </form>
+        ) : (
+          totalCount < MAX_STEPS && (
+            <button
+              onClick={() => setIsAddingStep(true)}
+              className="mt-2 inline-flex items-center gap-2 py-2.5 text-accent font-semibold text-[0.9375rem] cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>Dodaj krok</span>
+            </button>
+          )
+        )}
+        {!hasSteps && !isAddingStep && (
+          <p className="text-sm text-muted">Kroki są opcjonalne — możesz zamknąć dzień także bez nich.</p>
+        )}
       </div>
-    </div>
+
+      <div className="space-y-2 pt-2">
+        <button
+          onClick={() => onCompleteGoal(goal)}
+          className={`w-full inline-flex items-center justify-center gap-2 px-5 py-4 rounded-2xl font-semibold text-base transition-colors cursor-pointer ${
+            isAllDone ? 'bg-accent text-on-accent' : 'bg-ink text-paper'
+          }`}
+        >
+          <Check className="w-5 h-5 stroke-[3]" />
+          <span>Zrobione (Zamknij dzień)</span>
+        </button>
+
+        <button
+          onClick={onResetGoal}
+          className="w-full py-3 text-sm font-medium text-muted hover:text-ink transition-colors cursor-pointer"
+        >
+          Nowy cel
+        </button>
+      </div>
+    </section>
   );
 };

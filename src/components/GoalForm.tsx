@@ -64,19 +64,17 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto bg-white rounded-2xl border border-stone-200/90 shadow-sm p-6 sm:p-8">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-stone-900 tracking-tight">
-          Wyznacz dzisiejszy cel
-        </h2>
-        <p className="text-sm text-stone-500 mt-1">
-          Wybierz jedną najpotrzebniejszą rzecz, na której skupisz całą uwagę.
-        </p>
-      </div>
+    <section className="w-full">
+      <h2 className="font-display text-[2rem] sm:text-4xl font-bold leading-[1.05] tracking-tight">
+        Wyznacz dzisiejszy cel
+      </h2>
+      <p className="text-muted mt-2">
+        Wybierz jedną najpotrzebniejszą rzecz, na której skupisz całą uwagę.
+      </p>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="mt-8 space-y-8">
         <div>
-          <label htmlFor="goal-title" className="block text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2">
+          <label htmlFor="goal-title" className="block text-sm font-semibold mb-2">
             Cel dnia
           </label>
           <input
@@ -88,18 +86,16 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
               if (error) setError(null);
             }}
             placeholder="np. Napisać pierwszą wersję raportu kwartalnego"
-            className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent text-stone-900 placeholder:text-stone-400 font-medium text-base transition-all"
+            className="w-full px-4 py-4 rounded-2xl border border-line text-lg font-medium"
             autoFocus
           />
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600">
-              Kroki do celu (opcjonalne)
-            </label>
+            <span className="text-sm font-semibold">Kroki do celu (opcjonalne)</span>
             {steps.length > 0 && (
-              <span className="text-xs text-stone-400 font-mono">
+              <span className="text-sm text-muted font-display font-semibold">
                 {steps.length}/{MAX_STEPS}
               </span>
             )}
@@ -108,21 +104,19 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
           <div className="space-y-2.5">
             {steps.map((step, idx) => (
               <div key={step.id} className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-stone-400 w-5 text-right select-none">
-                  {idx + 1}.
-                </span>
                 <input
                   type="text"
                   value={step.text}
                   onChange={(e) => handleStepChange(idx, e.target.value)}
                   placeholder={`Krok ${idx + 1}...`}
-                  className="flex-1 px-3.5 py-2.5 text-sm rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 text-stone-800 placeholder:text-stone-400 transition-all"
+                  aria-label={`Krok ${idx + 1}`}
+                  className="flex-1 min-w-0 px-4 py-3 text-base rounded-xl border border-line"
                 />
                 <button
                   type="button"
                   onClick={() => handleRemoveStepInput(idx)}
                   title="Usuń krok"
-                  className="p-2 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                  className="p-3 text-faint hover:text-danger rounded-xl transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -134,49 +128,48 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
             type="button"
             onClick={handleAddStepInput}
             disabled={steps.length >= MAX_STEPS}
-            className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+            className="mt-2 inline-flex items-center gap-2 py-2.5 text-accent font-semibold text-[0.9375rem] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Dodaj krok</span>
           </button>
           {steps.length === 0 && (
-            <p className="mt-2 text-xs text-stone-400">
+            <p className="text-sm text-muted">
               Możesz zostawić sam cel — kroki dodasz, jeśli będą potrzebne.
             </p>
           )}
           {steps.length > 0 && (
-            <p className="mt-2 text-xs text-stone-400">
+            <p className="text-sm text-muted">
               Wskazówka: jeden krok to nie więcej niż 15–30 minut skupienia.
             </p>
           )}
         </div>
 
         {error && (
-          <div className="p-3 text-xs font-medium bg-rose-50 border border-rose-200 text-rose-700 rounded-lg">
+          <div role="alert" className="px-4 py-3 text-sm font-medium bg-danger-soft text-danger rounded-xl">
             {error}
           </div>
         )}
 
-        <div className="pt-2 flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-2">
           <button
             type="submit"
-            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-stone-900 text-white font-medium hover:bg-stone-800 transition-colors cursor-pointer shadow-sm text-sm"
+            className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-ink text-paper font-semibold text-base cursor-pointer"
           >
             <span>{isEditing ? 'Zapisz zmiany' : 'Startuj dzisiejszy cel'}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-5 h-5" />
           </button>
           {isEditing && (
             <button
               type="button"
               onClick={onCancel}
-              className="px-6 py-3.5 rounded-xl border border-stone-200 text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-sm font-medium transition-colors cursor-pointer"
+              className="w-full py-3 text-sm font-medium text-muted hover:text-ink transition-colors cursor-pointer"
             >
               Anuluj
             </button>
           )}
         </div>
-
       </form>
-    </div>
+    </section>
   );
 };

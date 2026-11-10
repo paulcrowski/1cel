@@ -1,61 +1,82 @@
 @import "tailwindcss";
 
+/*
+ * Paleta: chłodny papier, tusz i jeden mocny akcent (ultramaryna).
+ * Ciemny motyw podmienia te same zmienne według ustawień systemu,
+ * więc komponenty używają tylko nazw znaczeniowych (paper, ink, accent...).
+ */
+@theme {
+  --font-sans: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Figtree', ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: #f2f3f8;
+  --color-surface: #ffffff;
+  --color-ink: #0e1330;
+  --color-muted: #5b6080;
+  --color-faint: #9296b3;
+  --color-line: #dde0ee;
+  --color-accent: #3333f0;
+  --color-accent-soft: #e4e5ff;
+  --color-on-accent: #ffffff;
+  --color-danger: #c21f4a;
+  --color-danger-soft: #fce4eb;
+  --color-warn-soft: #fff1d6;
+  --color-warn-ink: #6b4300;
+}
+
 :root {
   color-scheme: light dark;
-  --page-bg: #ffffff;
 }
 
-/* Marginesy pod notch i pasek systemowy telefonu (viewport-fit=cover). */
-body {
-  background-color: var(--page-bg);
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
-}
-
-@layer base {
-  input {
-    background-color: var(--color-white);
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #0b0d1a;
+    --color-surface: #151832;
+    --color-ink: #eceeff;
+    --color-muted: #a3a8cc;
+    --color-faint: #6c7199;
+    --color-line: #2a2e55;
+    --color-accent: #8e90ff;
+    --color-accent-soft: #23265c;
+    --color-on-accent: #0b0d1a;
+    --color-danger: #ff7a98;
+    --color-danger-soft: #3a1424;
+    --color-warn-soft: #3a2a0a;
+    --color-warn-ink: #ffd98a;
   }
 }
 
-/*
- * Ciemny motyw z ustawień systemu: zamiast osobnych klas dark: odwracamy
- * używane skale kolorów. "white" staje się kolorem kart i tekstem na jasnych
- * przyciskach (bg-stone-900 + text-white), więc kontrast zostaje zachowany.
- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --page-bg: #151312;
+@layer base {
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    /* Marginesy pod notch i pasek systemowy telefonu (viewport-fit=cover). */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
+  }
 
-    --color-white: #292524;
-    --color-stone-50: #1f1c1b;
-    --color-stone-100: #221f1e;
-    --color-stone-200: #3a3633;
-    --color-stone-300: #57534e;
-    --color-stone-400: #8a847e;
-    --color-stone-500: #a8a29e;
-    --color-stone-600: #c4beb8;
-    --color-stone-700: #d6d3d1;
-    --color-stone-800: #e7e5e4;
-    --color-stone-900: #f5f5f4;
-    --color-stone-950: #fafaf9;
+  input {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+  }
 
-    --color-emerald-50: #052e22;
-    --color-emerald-100: #064e3b;
-    --color-emerald-200: #065f46;
-    --color-emerald-600: #34d399;
-    --color-emerald-700: #34d399;
-    --color-emerald-800: #6ee7b7;
-    --color-emerald-950: #d1fae5;
+  input::placeholder {
+    color: var(--color-faint);
+  }
 
-    --color-amber-50: #2a2008;
-    --color-amber-100: #3d2e0a;
-    --color-amber-200: #5c4510;
-    --color-amber-900: #fde68a;
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
 
-    --color-rose-50: #3b1219;
-    --color-rose-200: #7f1d2d;
-    --color-rose-600: #fb7185;
-    --color-rose-700: #fda4af;
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
   }
 }

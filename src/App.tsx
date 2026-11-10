@@ -26,10 +26,10 @@ export default function App() {
   } = useDailyGoal();
 
   return (
-    <div className="min-h-screen bg-stone-100/60 text-stone-900 font-sans flex flex-col selection:bg-stone-800 selection:text-stone-50">
+    <div className="min-h-screen bg-paper text-ink font-sans flex flex-col selection:bg-accent selection:text-on-accent">
       <Header />
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-24">
+      <main className="flex-1 w-full max-w-xl mx-auto px-5 pt-6 pb-28">
         {justCompleted && (
           <CompletedBanner progress={justCompleted} onDismiss={dismissCompleted} />
         )}
