@@ -62,12 +62,14 @@ describe('App — pełny przebieg', () => {
 
     expect(screen.getByText('Dzień zamknięty z sukcesem!')).toBeInTheDocument();
     expect(screen.getByText('Historia poprzednich dni (1)')).toBeInTheDocument();
-    expect(screen.getByText('Wyznacz dzisiejszy cel')).toBeInTheDocument();
+    // Po zamknięciu dnia widać sam komunikat, bez formularza nowego celu.
+    expect(screen.queryByText('Wyznacz dzisiejszy cel')).not.toBeInTheDocument();
     expect(localStorage.getItem(CURRENT_KEY)).toBeNull();
     expect(stored(HISTORY_KEY)[0]).toMatchObject({ title: 'Cel do zamknięcia', status: 'completed' });
 
     await user.click(screen.getByRole('button', { name: 'Wyznacz nowy cel' }));
     expect(screen.queryByText('Dzień zamknięty z sukcesem!')).not.toBeInTheDocument();
+    expect(screen.getByText('Wyznacz dzisiejszy cel')).toBeInTheDocument();
   });
 
   it('cel bez kroków: zapis, karta bez postępu, zamknięcie dnia i historia', async () => {

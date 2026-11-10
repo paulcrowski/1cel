@@ -30,11 +30,11 @@ export default function App() {
       <Header />
 
       <main className="flex-1 w-full max-w-xl mx-auto px-5 pt-6 pb-28">
-        {justCompleted && (
+        {justCompleted ? (
+          // Po zamknięciu dnia pokazujemy sam komunikat — formularz nowego celu
+          // pojawia się dopiero po „Wyznacz nowy cel”, żeby ekran nie był zatłoczony.
           <CompletedBanner progress={justCompleted} onDismiss={dismissCompleted} />
-        )}
-
-        {!currentGoal || isEditing ? (
+        ) : !currentGoal || isEditing ? (
           <GoalForm
             onSaveGoal={saveGoal}
             onCancel={cancelEditing}

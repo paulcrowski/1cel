@@ -10,7 +10,7 @@ interface CompletedBannerProps {
 export const CompletedBanner: React.FC<CompletedBannerProps> = ({ progress, onDismiss }) => {
   const success = progress.isAllDone || !progress.hasSteps;
   return (
-    <div className="w-full mb-8 p-6 sm:p-8 bg-accent-soft rounded-[28px]">
+    <div className="w-full p-6 sm:p-8 bg-accent-soft rounded-[28px]">
       <h2 className="font-display text-2xl sm:text-3xl font-bold leading-tight tracking-tight">
         {success ? 'Dzień zamknięty z sukcesem!' : 'Dzień zamknięty'}
       </h2>
