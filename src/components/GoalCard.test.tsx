@@ -110,9 +110,17 @@ describe('GoalCard — kroki', () => {
     expect(lastUpdate(onUpdateGoal).steps.map((s) => s.id)).toEqual(['step-2']);
   });
 
-  it('nie pokazuje przycisku usuwania, gdy został jeden krok', () => {
-    setup(makeGoal({ steps: [makeStep({ text: 'Jedyny' })] }));
-    expect(screen.queryByRole('button', { name: /Usuń krok/ })).not.toBeInTheDocument();
+  it('pozwala usunąć ostatni krok — cel zostaje bez kroków', async () => {
+    const { user, onUpdateGoal } = setup(makeGoal({ steps: [makeStep({ text: 'Jedyny' })] }));
+    await user.click(screen.getByRole('button', { name: /Usuń krok: Jedyny/ }));
+    expect(onUpdateGoal.mock.calls[0][0].steps).toEqual([]);
+  });
+
+  it('cel bez kroków nie pokazuje postępu, ale pozwala dodać krok i zamknąć dzień', () => {
+    setup(makeGoal({ steps: [] }));
+    expect(screen.queryByText('Postęp realizacji')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Dodaj krok' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Zrobione/ })).toBeInTheDocument();
   });
 });
 

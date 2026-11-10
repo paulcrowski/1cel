@@ -28,6 +28,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
     total: totalCount,
     percent: progressPercent,
     isAllDone,
+    hasSteps,
   } = getGoalProgress(goal);
 
   const handleToggleStep = (stepId: string) => {
@@ -64,7 +65,6 @@ export const GoalCard: React.FC<GoalCardProps> = ({
   };
 
   const handleDeleteStep = (stepId: string) => {
-    if (goal.steps.length <= 1) return;
     const updatedSteps = goal.steps.filter((s) => s.id !== stepId);
     onUpdateGoal({
       ...goal,
@@ -111,7 +111,8 @@ export const GoalCard: React.FC<GoalCardProps> = ({
           </h2>
         </div>
 
-        {/* Progress bar and percentage */}
+        {/* Progress bar and percentage (tylko gdy cel ma kroki) */}
+        {hasSteps && (
         <div className="bg-stone-50 p-4 rounded-xl border border-stone-200/70 space-y-2">
           <div className="flex items-center justify-between text-xs font-medium">
             <span className="text-stone-600">Postęp realizacji</span>
@@ -138,12 +139,13 @@ export const GoalCard: React.FC<GoalCardProps> = ({
             )}
           </div>
         </div>
+        )}
 
         {/* Steps List */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-              Lista kroków
+              {hasSteps ? 'Lista kroków' : 'Kroki (opcjonalne)'}
             </h3>
             {!isAddingStep && totalCount < MAX_STEPS && (
               <button
@@ -190,20 +192,18 @@ export const GoalCard: React.FC<GoalCardProps> = ({
                   {step.text}
                 </span>
 
-                {goal.steps.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteStep(step.id);
-                    }}
-                    className="p-1 text-stone-400 hover:text-rose-600 rounded transition-all md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100"
-                    title="Usuń ten krok"
-                    aria-label={`Usuń krok: ${step.text}`}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteStep(step.id);
+                  }}
+                  className="p-1 text-stone-400 hover:text-rose-600 rounded transition-all md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100"
+                  title="Usuń ten krok"
+                  aria-label={`Usuń krok: ${step.text}`}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               </div>
             ))}
           </div>

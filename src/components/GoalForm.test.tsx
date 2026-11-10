@@ -16,14 +16,27 @@ function setup(initialGoal?: DailyGoal | null) {
 
 const titleInput = () => screen.getByLabelText('Cel dnia');
 const stepInputs = () => screen.getAllByPlaceholderText(/^Krok \d+\.\.\.$/);
+const addStepButton = () => screen.getByRole('button', { name: 'Dodaj krok' });
+async function addSteps(user: ReturnType<typeof userEvent.setup>, n: number) {
+  for (let i = 0; i < n; i++) await user.click(addStepButton());
+}
 const submitButton = () => screen.getByRole('button', { name: /Startuj dzisiejszy cel|Zapisz zmiany/ });
 
 describe('GoalForm — nowy cel', () => {
-  it('startuje z pustym tytułem i trzema pustymi krokami', () => {
+  it('startuje z pustym tytułem i bez kroków (kroki są opcjonalne)', () => {
     setup();
     expect(titleInput()).toHaveValue('');
-    expect(stepInputs()).toHaveLength(3);
-    expect(screen.getByText(`3/${MAX_STEPS}`)).toBeInTheDocument();
+    expect(screen.queryAllByPlaceholderText(/^Krok \d+\.\.\.$/)).toHaveLength(0);
+  });
+
+  it('zapisuje sam cel bez kroków', async () => {
+    const { user, onSaveGoal } = setup();
+    await user.type(titleInput(), 'Tylko cel');
+    await user.click(submitButton());
+    expect(onSaveGoal).toHaveBeenCalledTimes(1);
+    const saved: DailyGoal = onSaveGoal.mock.calls[0][0];
+    expect(saved.title).toBe('Tylko cel');
+    expect(saved.steps).toEqual([]);
   });
 
   it('nie pokazuje przycisku Anuluj przy tworzeniu nowego celu', () => {
@@ -33,6 +46,7 @@ describe('GoalForm — nowy cel', () => {
 
   it('pusty tytuł pokazuje błąd i nie zapisuje', async () => {
     const { user, onSaveGoal } = setup();
+    await addSteps(user, 1);
     await user.type(stepInputs()[0], 'Coś do zrobienia');
     await user.click(submitButton());
     expect(screen.getByText('Wprowadź cel na dzisiejszy dzień.')).toBeInTheDocument();
@@ -42,19 +56,20 @@ describe('GoalForm — nowy cel', () => {
   it('tytuł z samych spacji jest traktowany jak pusty', async () => {
     const { user, onSaveGoal } = setup();
     await user.type(titleInput(), '    ');
+    await addSteps(user, 1);
     await user.type(stepInputs()[0], 'Krok');
     await user.click(submitButton());
     expect(screen.getByText('Wprowadź cel na dzisiejszy dzień.')).toBeInTheDocument();
     expect(onSaveGoal).not.toHaveBeenCalled();
   });
 
-  it('brak niepustych kroków pokazuje błąd i nie zapisuje', async () => {
+  it('puste pola kroków są pomijane przy zapisie (cel zapisuje się bez kroków)', async () => {
     const { user, onSaveGoal } = setup();
     await user.type(titleInput(), 'Mój cel');
+    await addSteps(user, 2);
     await user.type(stepInputs()[1], '   ');
     await user.click(submitButton());
-    expect(screen.getByText('Dodaj przynajmniej jeden konkretny krok.')).toBeInTheDocument();
-    expect(onSaveGoal).not.toHaveBeenCalled();
+    expect(onSaveGoal.mock.calls[0][0].steps).toEqual([]);
   });
 
   it('błąd znika, gdy użytkownik zaczyna pisać tytuł', async () => {
@@ -67,6 +82,7 @@ describe('GoalForm — nowy cel', () => {
 
   it('zapisuje cel: przycina spacje i pomija puste kroki', async () => {
     const { user, onSaveGoal } = setup();
+    await addSteps(user, 3);
     await user.type(titleInput(), '  Mój cel  ');
     await user.type(stepInputs()[0], '  Pierwszy  ');
     await user.type(stepInputs()[2], 'Trzeci');
@@ -85,7 +101,6 @@ describe('GoalForm — nowy cel', () => {
 
   it('zapis Enterem w polu tytułu działa jak kliknięcie przycisku', async () => {
     const { user, onSaveGoal } = setup();
-    await user.type(stepInputs()[0], 'Krok');
     await user.type(titleInput(), 'Cel{Enter}');
     expect(onSaveGoal).toHaveBeenCalledTimes(1);
   });
@@ -93,7 +108,7 @@ describe('GoalForm — nowy cel', () => {
   it('kroki mają unikalne id', async () => {
     const { user, onSaveGoal } = setup();
     await user.type(titleInput(), 'Cel');
-    await user.click(screen.getByRole('button', { name: 'Dodaj krok' }));
+    await addSteps(user, 4);
     for (const input of stepInputs()) await user.type(input, 'x');
     await user.click(submitButton());
     const ids = (onSaveGoal.mock.calls[0][0] as DailyGoal).steps.map((s) => s.id);
@@ -103,6 +118,7 @@ describe('GoalForm — nowy cel', () => {
   it('przyjmuje bardzo długi tekst, emoji i znaki HTML bez zmian', async () => {
     const { user, onSaveGoal } = setup();
     const longTitle = 'Ł'.repeat(500);
+    await addSteps(user, 1);
     await user.click(titleInput());
     await user.paste(longTitle);
     await user.click(stepInputs()[0]);
@@ -117,7 +133,7 @@ describe('GoalForm — nowy cel', () => {
 describe('GoalForm — kroki', () => {
   it('dodaje i usuwa kroki, aktualizując licznik', async () => {
     const { user } = setup();
-    await user.click(screen.getByRole('button', { name: 'Dodaj krok' }));
+    await addSteps(user, 4);
     expect(stepInputs()).toHaveLength(4);
     expect(screen.getByText(`4/${MAX_STEPS}`)).toBeInTheDocument();
 
@@ -127,24 +143,26 @@ describe('GoalForm — kroki', () => {
 
   it('blokuje dodawanie powyżej limitu kroków', async () => {
     const { user } = setup();
-    const addButton = screen.getByRole('button', { name: 'Dodaj krok' });
-    for (let i = 3; i < MAX_STEPS; i++) await user.click(addButton);
+    const addButton = addStepButton();
+    for (let i = 0; i < MAX_STEPS; i++) await user.click(addButton);
     expect(stepInputs()).toHaveLength(MAX_STEPS);
     expect(addButton).toBeDisabled();
   });
 
-  it('nie pozwala usunąć ostatniego kroku', async () => {
+  it('pozwala usunąć wszystkie kroki', async () => {
     const { user } = setup();
+    await addSteps(user, 3);
     let removeButtons = screen.getAllByTitle('Usuń krok');
     while (removeButtons.length > 0) {
       await user.click(removeButtons[0]);
       removeButtons = screen.queryAllByTitle('Usuń krok');
     }
-    expect(stepInputs()).toHaveLength(1);
+    expect(screen.queryAllByPlaceholderText(/^Krok \d+\.\.\.$/)).toHaveLength(0);
   });
 
   it('usunięcie kroku zachowuje teksty pozostałych', async () => {
     const { user } = setup();
+    await addSteps(user, 3);
     await user.type(stepInputs()[0], 'A');
     await user.type(stepInputs()[1], 'B');
     await user.type(stepInputs()[2], 'C');
@@ -198,9 +216,9 @@ describe('GoalForm — edycja istniejącego celu', () => {
     expect(onSaveGoal).not.toHaveBeenCalled();
   });
 
-  it('cel bez kroków w pamięci dostaje domyślne trzy puste pola', () => {
+  it('edycja celu bez kroków nie dodaje pustych pól', () => {
     setup(makeGoal({ steps: [] }));
-    expect(stepInputs()).toHaveLength(3);
+    expect(screen.queryAllByPlaceholderText(/^Krok \d+\.\.\.$/)).toHaveLength(0);
   });
 
   it('formularz ma dostępne pole tytułu przez etykietę', () => {
