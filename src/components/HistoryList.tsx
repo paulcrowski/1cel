@@ -46,7 +46,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, onDeleteHisto
 
       <div className="space-y-3">
         {history.map((item) => {
-          const { completed: completedSteps, total: totalSteps, percent } = getGoalProgress(item);
+          const { completed: completedSteps, total: totalSteps, percent, hasSteps } = getGoalProgress(item);
           const isExpanded = !!expandedIds[item.id];
 
           return (
@@ -68,7 +68,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, onDeleteHisto
                       {formatShortDate(item.date)}
                     </span>
                     <span className="text-[11px] font-mono font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                      {percent}% wykonane
+                      {hasSteps ? `${percent}% wykonane` : 'Cel zamknięty'}
                     </span>
                   </div>
                   <h4 className="text-sm font-semibold text-stone-900 truncate">
@@ -96,7 +96,13 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, onDeleteHisto
                 </button>
               </div>
 
-              {isExpanded && (
+              {isExpanded && !hasSteps && (
+                <div className="px-4 pb-4 pt-3 bg-stone-50/50 border-t border-stone-100 text-xs text-stone-500">
+                  Ten cel nie miał kroków.
+                </div>
+              )}
+
+              {isExpanded && hasSteps && (
                 <div className="px-4 pb-4 pt-1 bg-stone-50/50 border-t border-stone-100 text-xs space-y-2">
                   <div className="text-stone-500 font-semibold uppercase tracking-wider text-[10px] mb-1">
                     Zrealizowane kroki ({completedSteps}/{totalSteps})

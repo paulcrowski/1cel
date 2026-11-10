@@ -6,12 +6,13 @@ const stepsWith = (flags: boolean[]) =>
   flags.map((completed, i) => makeStep({ id: `s${i}`, completed }));
 
 describe('getGoalProgress', () => {
-  it('cel bez kroków ma 0% i nie jest ukończony (bez dzielenia przez zero)', () => {
+  it('cel bez kroków ma 0%, hasSteps=false (bez dzielenia przez zero)', () => {
     expect(getGoalProgress(makeGoal({ steps: [] }))).toEqual({
       completed: 0,
       total: 0,
       percent: 0,
       isAllDone: false,
+      hasSteps: false,
     });
   });
 

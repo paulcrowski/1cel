@@ -21,11 +21,8 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
   const isEditing = !!initialGoal;
   const [title, setTitle] = useState(initialGoal?.title || '');
   // Kroki trzymamy z ich id i stanem ukończenia, żeby edycja nie zerowała postępu.
-  const [steps, setSteps] = useState<Step[]>(() =>
-    initialGoal?.steps?.length
-      ? initialGoal.steps
-      : [0, 1, 2].map(i => newEmptyStep(i))
-  );
+  // Kroki są opcjonalne: nowy cel startuje bez nich, użytkownik dodaje je w razie potrzeby.
+  const [steps, setSteps] = useState<Step[]>(() => initialGoal?.steps ?? []);
   const nextStepIndex = useRef(steps.length);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +36,6 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
   };
 
   const handleRemoveStepInput = (index: number) => {
-    if (steps.length <= 1) return;
     setSteps(steps.filter((_, i) => i !== index));
   };
 
@@ -53,11 +49,6 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
     const formattedSteps: Step[] = steps
       .map(step => ({ ...step, text: step.text.trim() }))
       .filter(step => step.text.length > 0);
-    if (formattedSteps.length === 0) {
-      setError('Dodaj przynajmniej jeden konkretny krok.');
-      return;
-    }
-
     setError(null);
 
     const newGoal: DailyGoal = {
@@ -105,11 +96,13 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
         <div>
           <div className="flex items-center justify-between mb-3">
             <label className="block text-xs font-semibold uppercase tracking-wider text-stone-600">
-              Kroki do celu (zalecane 3–5 kroków)
+              Kroki do celu (opcjonalne)
             </label>
-            <span className="text-xs text-stone-400 font-mono">
-              {steps.length}/{MAX_STEPS}
-            </span>
+            {steps.length > 0 && (
+              <span className="text-xs text-stone-400 font-mono">
+                {steps.length}/{MAX_STEPS}
+              </span>
+            )}
           </div>
 
           <div className="space-y-2.5">
@@ -125,16 +118,14 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
                   placeholder={`Krok ${idx + 1}...`}
                   className="flex-1 px-3.5 py-2.5 text-sm rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 text-stone-800 placeholder:text-stone-400 transition-all"
                 />
-                {steps.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveStepInput(idx)}
-                    title="Usuń krok"
-                    className="p-2 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveStepInput(idx)}
+                  title="Usuń krok"
+                  className="p-2 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>
@@ -148,6 +139,11 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
             <Plus className="w-3.5 h-3.5" />
             <span>Dodaj krok</span>
           </button>
+          {steps.length === 0 && (
+            <p className="mt-2 text-xs text-stone-400">
+              Możesz zostawić sam cel — kroki dodasz, jeśli będą potrzebne.
+            </p>
+          )}
         </div>
 
         {error && (

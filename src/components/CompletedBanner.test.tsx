@@ -7,7 +7,7 @@ describe('CompletedBanner', () => {
   it('gdy wszystkie kroki wykonane, gratuluje', () => {
     render(
       <CompletedBanner
-        progress={{ completed: 3, total: 3, percent: 100, isAllDone: true }}
+        progress={{ completed: 3, total: 3, percent: 100, isAllDone: true, hasSteps: true }}
         onDismiss={() => {}}
       />,
     );
@@ -17,7 +17,7 @@ describe('CompletedBanner', () => {
   it('gdy nie wszystkie, pokazuje neutralny komunikat z liczbą kroków', () => {
     render(
       <CompletedBanner
-        progress={{ completed: 1, total: 3, percent: 33, isAllDone: false }}
+        progress={{ completed: 1, total: 3, percent: 33, isAllDone: false, hasSteps: true }}
         onDismiss={() => {}}
       />,
     );
@@ -30,7 +30,7 @@ describe('CompletedBanner', () => {
     const onDismiss = vi.fn();
     render(
       <CompletedBanner
-        progress={{ completed: 1, total: 1, percent: 100, isAllDone: true }}
+        progress={{ completed: 1, total: 1, percent: 100, isAllDone: true, hasSteps: true }}
         onDismiss={onDismiss}
       />,
     );

@@ -15,8 +15,10 @@ beforeEach(() => {
 
 async function createGoal(user: ReturnType<typeof userEvent.setup>, title: string, steps: string[]) {
   await user.type(screen.getByLabelText('Cel dnia'), title);
-  const inputs = screen.getAllByPlaceholderText(/^Krok \d+\.\.\.$/);
-  for (const [i, text] of steps.entries()) await user.type(inputs[i], text);
+  for (const [i, text] of steps.entries()) {
+    await user.click(screen.getByRole('button', { name: 'Dodaj krok' }));
+    await user.type(screen.getAllByPlaceholderText(/^Krok \d+\.\.\.$/)[i], text);
+  }
   await user.click(screen.getByRole('button', { name: 'Startuj dzisiejszy cel' }));
 }
 
@@ -66,6 +68,20 @@ describe('App — pełny przebieg', () => {
 
     await user.click(screen.getByRole('button', { name: 'Wyznacz nowy cel' }));
     expect(screen.queryByText('Dzień zamknięty z sukcesem!')).not.toBeInTheDocument();
+  });
+
+  it('cel bez kroków: zapis, karta bez postępu, zamknięcie dnia i historia', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await createGoal(user, 'Sam cel', []);
+
+    expect(screen.getByRole('heading', { name: 'Sam cel' })).toBeInTheDocument();
+    expect(stored(CURRENT_KEY).steps).toEqual([]);
+    expect(screen.queryByText('Postęp realizacji')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Zrobione/ }));
+    expect(screen.getByText('Dzień zamknięty z sukcesem!')).toBeInTheDocument();
+    expect(screen.getByText('Cel zamknięty')).toBeInTheDocument();
   });
 
   it('zamknięcie dnia z niepełnym postępem pokazuje neutralny baner', async () => {

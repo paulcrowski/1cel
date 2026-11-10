@@ -5,6 +5,8 @@ export interface GoalProgress {
   total: number;
   percent: number;
   isAllDone: boolean;
+  /** Cel może nie mieć kroków — wtedy postęp krokowy nie ma sensu. */
+  hasSteps: boolean;
 }
 
 export function getGoalProgress(goal: DailyGoal): GoalProgress {
@@ -15,5 +17,6 @@ export function getGoalProgress(goal: DailyGoal): GoalProgress {
     total,
     percent: total > 0 ? Math.round((completed / total) * 100) : 0,
     isAllDone: total > 0 && completed === total,
+    hasSteps: total > 0,
   };
 }
