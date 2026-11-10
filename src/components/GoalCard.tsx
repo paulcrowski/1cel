@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Circle, Plus, Check, Play, Trophy, Edit3, Trash2 } from 'lucide-react';
+import { CheckCircle2, Circle, Plus, Check, Trophy, Edit3, Trash2 } from 'lucide-react';
 import { DailyGoal, Step } from '../types';
+import { createId } from '../utils/ids';
+import { getGoalProgress } from '../utils/goalProgress';
 
 interface GoalCardProps {
   goal: DailyGoal;
@@ -20,9 +22,12 @@ export const GoalCard: React.FC<GoalCardProps> = ({
   const [newStepText, setNewStepText] = useState('');
   const [isAddingStep, setIsAddingStep] = useState(false);
 
-  const completedCount = goal.steps.filter((s) => s.completed).length;
-  const totalCount = goal.steps.length;
-  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const {
+    completed: completedCount,
+    total: totalCount,
+    percent: progressPercent,
+    isAllDone,
+  } = getGoalProgress(goal);
 
   const handleToggleStep = (stepId: string) => {
     const updatedSteps = goal.steps.map((step) =>
@@ -37,19 +42,12 @@ export const GoalCard: React.FC<GoalCardProps> = ({
     onUpdateGoal(updatedGoal);
   };
 
-  const handleStartGoal = () => {
-    onUpdateGoal({
-      ...goal,
-      status: 'active',
-    });
-  };
-
   const handleAddStepSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStepText.trim()) return;
 
     const newStep: Step = {
-      id: `step-${Date.now()}`,
+      id: createId('step'),
       text: newStepText.trim(),
       completed: false,
     };
@@ -73,19 +71,12 @@ export const GoalCard: React.FC<GoalCardProps> = ({
     });
   };
 
-  const isAllDone = completedCount === totalCount && totalCount > 0;
-
   return (
     <div className="w-full max-w-xl mx-auto bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
       {/* Dynamic Header Badge */}
       <div className="bg-stone-50 border-b border-stone-200/80 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {goal.status === 'draft' ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-              Planowanie
-            </span>
-          ) : isAllDone ? (
+          {isAllDone ? (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
               <Trophy className="w-3.5 h-3.5" />
               Wszystkie kroki wykonane!
@@ -177,6 +168,8 @@ export const GoalCard: React.FC<GoalCardProps> = ({
               >
                 <button
                   type="button"
+                  aria-pressed={step.completed}
+                  aria-label={`${step.completed ? 'Cofnij wykonanie' : 'Oznacz jako wykonany'}: ${step.text}`}
                   className={`mt-0.5 shrink-0 transition-colors ${
                     step.completed ? 'text-emerald-600' : 'text-stone-300 group-hover:text-stone-400'
                   }`}
@@ -203,8 +196,9 @@ export const GoalCard: React.FC<GoalCardProps> = ({
                       e.stopPropagation();
                       handleDeleteStep(step.id);
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-rose-600 rounded transition-all"
+                    className="p-1 text-stone-400 hover:text-rose-600 rounded transition-all md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100"
                     title="Usuń ten krok"
+                    aria-label={`Usuń krok: ${step.text}`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -244,29 +238,19 @@ export const GoalCard: React.FC<GoalCardProps> = ({
           )}
         </div>
 
-        {/* Action Buttons: Start / Zrobione */}
+        {/* Przyciski akcji: Zrobione / Nowy cel */}
         <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row gap-3">
-          {goal.status === 'draft' ? (
-            <button
-              onClick={handleStartGoal}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-stone-900 text-white font-medium hover:bg-stone-800 transition-colors cursor-pointer text-sm shadow-sm"
-            >
-              <Play className="w-4 h-4 fill-current" />
-              <span>Start</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => onCompleteGoal(goal)}
-              className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-colors cursor-pointer text-sm shadow-sm ${
-                isAllDone
-                  ? 'bg-emerald-700 text-white hover:bg-emerald-800'
-                  : 'bg-stone-900 text-white hover:bg-stone-800'
-              }`}
-            >
-              <Check className="w-4 h-4 stroke-[3]" />
-              <span>Zrobione (Zamknij dzień)</span>
-            </button>
-          )}
+          <button
+            onClick={() => onCompleteGoal(goal)}
+            className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium transition-colors cursor-pointer text-sm shadow-sm ${
+              isAllDone
+                ? 'bg-emerald-700 text-white hover:bg-emerald-800'
+                : 'bg-stone-900 text-white hover:bg-stone-800'
+            }`}
+          >
+            <Check className="w-4 h-4 stroke-[3]" />
+            <span>Zrobione (Zamknij dzień)</span>
+          </button>
 
           <button
             onClick={onResetGoal}
