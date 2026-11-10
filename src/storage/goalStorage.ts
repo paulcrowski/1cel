@@ -87,3 +87,15 @@ export function deleteHistoryItem(id: string): DailyGoal[] {
   saveGoalHistory(filtered);
   return filtered;
 }
+
+/** Prosi przeglądarkę o trwałą pamięć, żeby nie czyściła danych celu przy braku miejsca. */
+export async function requestPersistentStorage(): Promise<boolean> {
+  if (typeof navigator === 'undefined' || !navigator.storage?.persist) return false;
+  try {
+    if (await navigator.storage.persisted()) return true;
+    return await navigator.storage.persist();
+  } catch (error) {
+    console.warn('Nie udało się włączyć trwałej pamięci:', error);
+    return false;
+  }
+}

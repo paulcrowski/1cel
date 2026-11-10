@@ -4,6 +4,7 @@ import {
   deleteHistoryItem,
   getCurrentGoal,
   getGoalHistory,
+  requestPersistentStorage,
   saveCurrentGoal,
 } from './goalStorage';
 import { makeGoal } from '../test/factories';
@@ -221,5 +222,39 @@ describe('deleteHistoryItem', () => {
 
   it('działa na pustej historii', () => {
     expect(deleteHistoryItem('a')).toEqual([]);
+  });
+});
+
+describe('requestPersistentStorage', () => {
+  it('zwraca false, gdy przeglądarka nie obsługuje navigator.storage', async () => {
+    vi.stubGlobal('navigator', {});
+    expect(await requestPersistentStorage()).toBe(false);
+  });
+
+  it('nie prosi ponownie, gdy pamięć jest już trwała', async () => {
+    const persist = vi.fn();
+    vi.stubGlobal('navigator', { storage: { persisted: async () => true, persist } });
+    expect(await requestPersistentStorage()).toBe(true);
+    expect(persist).not.toHaveBeenCalled();
+  });
+
+  it('zwraca wynik persist(), gdy pamięć nie jest jeszcze trwała', async () => {
+    vi.stubGlobal('navigator', {
+      storage: { persisted: async () => false, persist: async () => false },
+    });
+    expect(await requestPersistentStorage()).toBe(false);
+  });
+
+  it('nie rzuca błędu, gdy persist() się nie powiedzie', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubGlobal('navigator', {
+      storage: {
+        persisted: async () => false,
+        persist: async () => {
+          throw new Error('odmowa');
+        },
+      },
+    });
+    expect(await requestPersistentStorage()).toBe(false);
   });
 });
