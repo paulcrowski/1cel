@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { History, Calendar, ChevronDown, ChevronUp, CheckCircle2, Trash2 } from 'lucide-react';
 import { DailyGoal } from '../types';
-import { formatShortDate } from '../utils/date';
+import { formatShortDate, getTodayIso } from '../utils/date';
+import { getStreak } from '../utils/streak';
 import { getGoalProgress } from '../utils/goalProgress';
 
 interface HistoryListProps {
@@ -33,15 +34,25 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, onDeleteHisto
     );
   }
 
+  const streak = getStreak(
+    history.map((item) => item.date),
+    getTodayIso(),
+  );
+
   return (
     <div className="w-full max-w-xl mx-auto mt-10 space-y-4">
-      <div className="flex items-center justify-between px-1">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1">
         <div className="flex items-center gap-2">
           <History className="w-4 h-4 text-stone-500" />
           <h3 className="text-sm font-bold uppercase tracking-wider text-stone-700">
             Historia poprzednich dni ({history.length})
           </h3>
         </div>
+        {streak >= 2 && (
+          <span className="text-xs font-semibold text-emerald-700 whitespace-nowrap">
+            Seria: {streak} dni z rzędu
+          </span>
+        )}
       </div>
 
       <div className="space-y-3">

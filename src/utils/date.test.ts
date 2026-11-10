@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { formatLongDate, formatShortDate, getTodayIso } from './date';
+import { formatLongDate, formatShortDate, getTodayIso, isBeforeToday } from './date';
 
 // Strefa czasowa jest ustawiona na Europe/Warsaw w vitest.config.ts.
 describe('getTodayIso', () => {
@@ -58,5 +58,37 @@ describe('formatShortDate', () => {
 
   it.each(['', 'nie-data', '2026-13-45'])('niepoprawną datę "%s" zwraca bez zmian', (value) => {
     expect(formatShortDate(value)).toBe(value);
+  });
+});
+
+describe('formatShortDate — strefy na zachód od UTC', () => {
+  const original = process.env.TZ;
+  afterEach(() => {
+    process.env.TZ = original;
+    vi.resetModules();
+  });
+
+  it('nie cofa daty o dzień (YYYY-MM-DD to data lokalna, nie UTC)', async () => {
+    process.env.TZ = 'America/Los_Angeles';
+    // Formatter w date.ts zapamiętuje strefę przy imporcie — ładujemy moduł od nowa.
+    vi.resetModules();
+    const { formatShortDate: format } = await import('./date');
+    expect(format('2026-11-10')).toBe('10 lis 2026');
+  });
+});
+
+describe('isBeforeToday', () => {
+  afterEach(() => vi.useRealTimers());
+
+  it('rozpoznaje wcześniejszy dzień, dzisiejszy i przyszły', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-10T12:00:00Z'));
+    expect(isBeforeToday('2026-11-09')).toBe(true);
+    expect(isBeforeToday('2026-11-10')).toBe(false);
+    expect(isBeforeToday('2026-11-11')).toBe(false);
+  });
+
+  it.each(['', 'kiedyś', '2026-13-45'])('niepoprawna data "%s" nie jest stara', (value) => {
+    expect(isBeforeToday(value)).toBe(false);
   });
 });

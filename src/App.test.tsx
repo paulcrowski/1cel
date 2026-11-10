@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
@@ -233,5 +233,47 @@ describe('App — niedostępny localStorage', () => {
     render(<App />);
     await createGoal(user, 'Bez zapisu', ['A']);
     expect(screen.getByRole('heading', { name: 'Bez zapisu' })).toBeInTheDocument();
+  });
+});
+
+describe('App — cofanie', () => {
+  it('„Nowy cel” można cofnąć przyciskiem Cofnij', async () => {
+    localStorage.setItem(CURRENT_KEY, JSON.stringify(makeGoal({ title: 'Do cofnięcia' })));
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Nowy cel' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Cel usunięty.');
+
+    await user.click(screen.getByRole('button', { name: 'Cofnij' }));
+
+    expect(screen.getByRole('heading', { name: 'Do cofnięcia' })).toBeInTheDocument();
+    expect(stored(CURRENT_KEY).title).toBe('Do cofnięcia');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('usunięty wpis historii wraca po Cofnij', async () => {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify([makeGoal({ id: 'h', title: 'Z historii' })]));
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Usuń wpis z historii: Z historii' }));
+    expect(screen.getByText('Brak historii poprzednich dni')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cofnij' }));
+    expect(screen.getByText('Z historii')).toBeInTheDocument();
+    expect(stored(HISTORY_KEY)).toHaveLength(1);
+  });
+
+  it('komunikat znika sam po kilku sekundach', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    localStorage.setItem(CURRENT_KEY, JSON.stringify(makeGoal()));
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Nowy cel' }));
+    expect(screen.getByRole('status')).toBeInTheDocument();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(8500);
+    });
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });

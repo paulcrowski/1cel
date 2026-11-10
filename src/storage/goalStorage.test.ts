@@ -5,6 +5,7 @@ import {
   getCurrentGoal,
   getGoalHistory,
   requestPersistentStorage,
+  restoreHistoryItem,
   saveCurrentGoal,
 } from './goalStorage';
 import { makeGoal } from '../test/factories';
@@ -256,5 +257,27 @@ describe('requestPersistentStorage', () => {
       },
     });
     expect(await requestPersistentStorage()).toBe(false);
+  });
+});
+
+describe('restoreHistoryItem', () => {
+  const ids = (list: { id: string }[]) => list.map((g) => g.id);
+
+  it('wstawia wpis na dawne miejsce i zapisuje historię', () => {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify([makeGoal({ id: 'a' }), makeGoal({ id: 'c' })]));
+    const result = restoreHistoryItem(makeGoal({ id: 'b' }), 1);
+    expect(ids(result)).toEqual(['a', 'b', 'c']);
+    expect(ids(JSON.parse(localStorage.getItem(HISTORY_KEY)!))).toEqual(['a', 'b', 'c']);
+  });
+
+  it('indeks poza zakresem wstawia na początek lub koniec', () => {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify([makeGoal({ id: 'a' })]));
+    expect(ids(restoreHistoryItem(makeGoal({ id: 'x' }), 99))).toEqual(['a', 'x']);
+    expect(ids(restoreHistoryItem(makeGoal({ id: 'y' }), -5))).toEqual(['y', 'a', 'x']);
+  });
+
+  it('nie dubluje wpisu, który już jest w historii', () => {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify([makeGoal({ id: 'a' })]));
+    expect(ids(restoreHistoryItem(makeGoal({ id: 'a' }), 0))).toEqual(['a']);
   });
 });

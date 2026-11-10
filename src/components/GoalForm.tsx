@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Plus, Trash2, ArrowRight, Lightbulb } from 'lucide-react';
+import { Plus, Trash2, ArrowRight } from 'lucide-react';
 import { DailyGoal, Step } from '../types';
 import { MAX_STEPS } from '../constants';
 import { createId } from '../utils/ids';
@@ -144,6 +144,11 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
               Możesz zostawić sam cel — kroki dodasz, jeśli będą potrzebne.
             </p>
           )}
+          {steps.length > 0 && (
+            <p className="mt-2 text-xs text-stone-400">
+              Wskazówka: jeden krok to nie więcej niż 15–30 minut skupienia.
+            </p>
+          )}
         </div>
 
         {error && (
@@ -171,12 +176,6 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
           )}
         </div>
 
-        <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-stone-50 border border-stone-200/60 text-stone-500 text-xs">
-          <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-          <span>
-            Wskazówka: Dziel zadania tak, aby każdy krok wymagał nie więcej niż 15-30 minut skupienia.
-          </span>
-        </div>
       </form>
     </div>
   );

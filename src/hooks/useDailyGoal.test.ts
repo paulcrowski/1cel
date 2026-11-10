@@ -170,3 +170,57 @@ describe('deleteFromHistory', () => {
     expect(stored(HISTORY_KEY).map((g: { id: string }) => g.id)).toEqual(['b']);
   });
 });
+
+describe('cofanie (undo)', () => {
+  it('resetGoal można cofnąć — cel wraca do stanu i pamięci', () => {
+    const goal = makeGoal({ id: 'a', steps: [makeStep({ completed: true })] });
+    const { result } = renderHook(() => useDailyGoal());
+    act(() => result.current.saveGoal(goal));
+    act(() => result.current.resetGoal());
+    expect(result.current.undoNotice).toEqual({ message: 'Cel usunięty.' });
+
+    act(() => result.current.undo());
+
+    expect(result.current.currentGoal).toEqual(goal);
+    expect(stored(CURRENT_KEY)).toEqual(goal);
+    expect(result.current.undoNotice).toBeNull();
+  });
+
+  it('zapis nowego celu unieważnia cofnięcie, więc stary cel nie nadpisze nowego', () => {
+    const { result } = renderHook(() => useDailyGoal());
+    act(() => result.current.saveGoal(makeGoal({ id: 'stary' })));
+    act(() => result.current.resetGoal());
+    act(() => result.current.saveGoal(makeGoal({ id: 'nowy' })));
+
+    expect(result.current.undoNotice).toBeNull();
+    act(() => result.current.undo());
+    expect(result.current.currentGoal?.id).toBe('nowy');
+  });
+
+  it('usunięcie z historii można cofnąć — wpis wraca na to samo miejsce', () => {
+    const { result } = renderHook(() => useDailyGoal());
+    act(() => result.current.completeGoal(makeGoal({ id: 'a' })));
+    act(() => result.current.completeGoal(makeGoal({ id: 'b' })));
+    act(() => result.current.completeGoal(makeGoal({ id: 'c' })));
+    // Historia: c, b, a
+    act(() => result.current.deleteFromHistory('b'));
+    expect(result.current.undoNotice).toEqual({ message: 'Wpis usunięty z historii.' });
+
+    act(() => result.current.undo());
+
+    expect(result.current.history.map((g) => g.id)).toEqual(['c', 'b', 'a']);
+    expect(stored(HISTORY_KEY).map((g: { id: string }) => g.id)).toEqual(['c', 'b', 'a']);
+  });
+
+  it('undo bez niczego do cofnięcia nic nie robi', () => {
+    const { result } = renderHook(() => useDailyGoal());
+    act(() => result.current.undo());
+    expect(result.current.currentGoal).toBeNull();
+  });
+
+  it('usunięcie nieistniejącego wpisu nie tworzy cofnięcia', () => {
+    const { result } = renderHook(() => useDailyGoal());
+    act(() => result.current.deleteFromHistory('brak'));
+    expect(result.current.undoNotice).toBeNull();
+  });
+});

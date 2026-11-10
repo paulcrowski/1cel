@@ -87,3 +87,21 @@ describe('HistoryList', () => {
     expect(document.querySelector('script')).toBeNull();
   });
 });
+
+describe('HistoryList — seria dni', () => {
+  const day = (date: string) => makeGoal({ id: date, date });
+
+  it('pokazuje serię od 2 dni z rzędu', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-10T12:00:00'));
+    setup([day('2026-11-10'), day('2026-11-09'), day('2026-11-08')]);
+    expect(screen.getByText('Seria: 3 dni z rzędu')).toBeInTheDocument();
+  });
+
+  it('nie pokazuje serii dla pojedynczego dnia ani po przerwie', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-10T12:00:00'));
+    setup([day('2026-11-10'), day('2026-11-07')]);
+    expect(screen.queryByText(/Seria:/)).not.toBeInTheDocument();
+  });
+});

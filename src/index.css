@@ -1,7 +1,61 @@
 @import "tailwindcss";
 
+:root {
+  color-scheme: light dark;
+  --page-bg: #ffffff;
+}
+
 /* Marginesy pod notch i pasek systemowy telefonu (viewport-fit=cover). */
 body {
+  background-color: var(--page-bg);
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
     env(safe-area-inset-left);
+}
+
+@layer base {
+  input {
+    background-color: var(--color-white);
+  }
+}
+
+/*
+ * Ciemny motyw z ustawień systemu: zamiast osobnych klas dark: odwracamy
+ * używane skale kolorów. "white" staje się kolorem kart i tekstem na jasnych
+ * przyciskach (bg-stone-900 + text-white), więc kontrast zostaje zachowany.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: #151312;
+
+    --color-white: #292524;
+    --color-stone-50: #1f1c1b;
+    --color-stone-100: #221f1e;
+    --color-stone-200: #3a3633;
+    --color-stone-300: #57534e;
+    --color-stone-400: #8a847e;
+    --color-stone-500: #a8a29e;
+    --color-stone-600: #c4beb8;
+    --color-stone-700: #d6d3d1;
+    --color-stone-800: #e7e5e4;
+    --color-stone-900: #f5f5f4;
+    --color-stone-950: #fafaf9;
+
+    --color-emerald-50: #052e22;
+    --color-emerald-100: #064e3b;
+    --color-emerald-200: #065f46;
+    --color-emerald-600: #34d399;
+    --color-emerald-700: #34d399;
+    --color-emerald-800: #6ee7b7;
+    --color-emerald-950: #d1fae5;
+
+    --color-amber-50: #2a2008;
+    --color-amber-100: #3d2e0a;
+    --color-amber-200: #5c4510;
+    --color-amber-900: #fde68a;
+
+    --color-rose-50: #3b1219;
+    --color-rose-200: #7f1d2d;
+    --color-rose-600: #fb7185;
+    --color-rose-700: #fda4af;
+  }
 }

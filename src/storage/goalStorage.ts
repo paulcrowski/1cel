@@ -88,6 +88,15 @@ export function deleteHistoryItem(id: string): DailyGoal[] {
   return filtered;
 }
 
+/** Przywraca usunięty wpis na jego dawne miejsce (np. po „Cofnij”). */
+export function restoreHistoryItem(item: DailyGoal, index: number): DailyGoal[] {
+  const rest = getGoalHistory().filter((existing) => existing.id !== item.id);
+  const position = Math.min(Math.max(index, 0), rest.length);
+  const restored = [...rest.slice(0, position), item, ...rest.slice(position)];
+  saveGoalHistory(restored);
+  return restored;
+}
+
 /** Prosi przeglądarkę o trwałą pamięć, żeby nie czyściła danych celu przy braku miejsca. */
 export async function requestPersistentStorage(): Promise<boolean> {
   if (typeof navigator === 'undefined' || !navigator.storage?.persist) return false;

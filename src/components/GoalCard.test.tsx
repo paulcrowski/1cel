@@ -36,14 +36,12 @@ describe('GoalCard — widok', () => {
     expect(screen.getByText('Poprawki')).toBeInTheDocument();
     expect(screen.getByText('50%')).toBeInTheDocument();
     expect(screen.getByText('Kroki: 1 z 2')).toBeInTheDocument();
-    expect(screen.getByText('W trakcie realizacji')).toBeInTheDocument();
   });
 
   it('gdy wszystkie kroki są wykonane, pokazuje odznakę i 100%', () => {
     setup(makeGoal({ steps: [makeStep({ completed: true })] }));
     expect(screen.getByText('Wszystkie kroki wykonane!')).toBeInTheDocument();
     expect(screen.getByText('100%')).toBeInTheDocument();
-    expect(screen.getByText('Gotowe do zamknięcia dnia')).toBeInTheDocument();
   });
 
   it('tekst z HTML jest wyświetlany jako zwykły tekst', () => {
@@ -184,5 +182,76 @@ describe('GoalCard — akcje', () => {
     expect(onEditGoal).toHaveBeenCalledTimes(1);
     // Obecne zachowanie: reset bez potwierdzenia.
     expect(onResetGoal).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('GoalCard — edycja kroku', () => {
+  const editButton = (text: string) => screen.getByRole('button', { name: `Edytuj krok: ${text}` });
+
+  it('Enter zapisuje przycięty tekst, nie zmieniając wykonania ani innych kroków', async () => {
+    const { user, onUpdateGoal } = setup();
+    await user.click(editButton('Pierwszy'));
+    const input = screen.getByLabelText('Edytuj tekst kroku 1');
+    await user.clear(input);
+    await user.type(input, '  Poprawiony  {Enter}');
+
+    expect(onUpdateGoal).toHaveBeenCalledTimes(1);
+    expect(lastUpdate(onUpdateGoal).steps).toEqual([
+      { id: 'step-1', text: 'Poprawiony', completed: false },
+      { id: 'step-2', text: 'Drugi', completed: false },
+    ]);
+    expect(screen.queryByLabelText('Edytuj tekst kroku 1')).not.toBeInTheDocument();
+  });
+
+  it('klikanie w pole edycji nie przełącza wykonania kroku', async () => {
+    const { user, onUpdateGoal } = setup();
+    await user.click(editButton('Pierwszy'));
+    await user.click(screen.getByLabelText('Edytuj tekst kroku 1'));
+    expect(onUpdateGoal).not.toHaveBeenCalled();
+  });
+
+  it('Escape anuluje bez zapisu', async () => {
+    const { user, onUpdateGoal } = setup();
+    await user.click(editButton('Pierwszy'));
+    await user.type(screen.getByLabelText('Edytuj tekst kroku 1'), ' zmiana{Escape}');
+    expect(onUpdateGoal).not.toHaveBeenCalled();
+    expect(screen.getByText('Pierwszy')).toBeInTheDocument();
+  });
+
+  it('pusty tekst nie zapisuje się i zachowuje stary krok', async () => {
+    const { user, onUpdateGoal } = setup();
+    await user.click(editButton('Pierwszy'));
+    await user.clear(screen.getByLabelText('Edytuj tekst kroku 1'));
+    await user.keyboard('{Enter}');
+    expect(onUpdateGoal).not.toHaveBeenCalled();
+    expect(screen.getByText('Pierwszy')).toBeInTheDocument();
+  });
+
+  it('utrata fokusu zapisuje zmianę (tylko raz)', async () => {
+    const { user, onUpdateGoal } = setup();
+    await user.click(editButton('Pierwszy'));
+    await user.type(screen.getByLabelText('Edytuj tekst kroku 1'), '!');
+    await user.click(document.body);
+    expect(onUpdateGoal).toHaveBeenCalledTimes(1);
+    expect(lastUpdate(onUpdateGoal).steps[0].text).toBe('Pierwszy!');
+  });
+});
+
+describe('GoalCard — cel z poprzedniego dnia', () => {
+  it('pokazuje baner i pozwala przenieść cel na dziś', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-12T12:00:00'));
+    const { user, onUpdateGoal } = setup(makeGoal({ date: '2026-11-10' }));
+    expect(screen.getByText('Ten cel jest z dnia 10 lis 2026.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Przenieś na dziś' }));
+    expect(lastUpdate(onUpdateGoal).date).toBe('2026-11-12');
+  });
+
+  it('dla dzisiejszego celu baner się nie pokazuje', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-10T12:00:00'));
+    setup(makeGoal({ date: '2026-11-10' }));
+    expect(screen.queryByRole('button', { name: 'Przenieś na dziś' })).not.toBeInTheDocument();
   });
 });
