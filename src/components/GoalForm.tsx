@@ -1,30 +1,40 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Plus, Trash2, ArrowRight, Lightbulb } from 'lucide-react';
 import { DailyGoal, Step } from '../types';
+import { createId } from '../utils/ids';
+import { getTodayIso } from '../utils/date';
 
 interface GoalFormProps {
   onSaveGoal: (goal: DailyGoal) => void;
+  onCancel: () => void;
   initialGoal?: DailyGoal | null;
 }
 
-export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, initialGoal }) => {
+const newEmptyStep = (index: number): Step => ({
+  id: createId('step', index),
+  text: '',
+  completed: false,
+});
+
+export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initialGoal }) => {
+  const isEditing = !!initialGoal;
   const [title, setTitle] = useState(initialGoal?.title || '');
-  const [steps, setSteps] = useState<string[]>(
+  // Kroki trzymamy z ich id i stanem ukończenia, żeby edycja nie zerowała postępu.
+  const [steps, setSteps] = useState<Step[]>(() =>
     initialGoal?.steps?.length
-      ? initialGoal.steps.map(s => s.text)
-      : ['', '', '']
+      ? initialGoal.steps
+      : [0, 1, 2].map(i => newEmptyStep(i))
   );
+  const nextStepIndex = useRef(steps.length);
   const [error, setError] = useState<string | null>(null);
 
   const handleStepChange = (index: number, value: string) => {
-    const updated = [...steps];
-    updated[index] = value;
-    setSteps(updated);
+    setSteps(steps.map((step, i) => (i === index ? { ...step, text: value } : step)));
   };
 
   const handleAddStepInput = () => {
     if (steps.length >= 10) return;
-    setSteps([...steps, '']);
+    setSteps([...steps, newEmptyStep(nextStepIndex.current++)]);
   };
 
   const handleRemoveStepInput = (index: number) => {
@@ -39,25 +49,19 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, initialGoal }) =
       return;
     }
 
-    const validStepTexts = steps.map(s => s.trim()).filter(s => s.length > 0);
-    if (validStepTexts.length === 0) {
+    const formattedSteps: Step[] = steps
+      .map(step => ({ ...step, text: step.text.trim() }))
+      .filter(step => step.text.length > 0);
+    if (formattedSteps.length === 0) {
       setError('Dodaj przynajmniej jeden konkretny krok.');
       return;
     }
 
     setError(null);
 
-    const formattedSteps: Step[] = validStepTexts.map((text, idx) => ({
-      id: `step-${Date.now()}-${idx}`,
-      text,
-      completed: false,
-    }));
-
-    const todayStr = new Date().toISOString().split('T')[0];
-
     const newGoal: DailyGoal = {
-      id: initialGoal?.id || `goal-${Date.now()}`,
-      date: initialGoal?.date || todayStr,
+      id: initialGoal?.id || createId('goal'),
+      date: initialGoal?.date || getTodayIso(),
       title: title.trim(),
       steps: formattedSteps,
       status: 'active',
@@ -108,14 +112,14 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, initialGoal }) =
           </div>
 
           <div className="space-y-2.5">
-            {steps.map((stepText, idx) => (
-              <div key={idx} className="flex items-center gap-2">
+            {steps.map((step, idx) => (
+              <div key={step.id} className="flex items-center gap-2">
                 <span className="text-xs font-mono font-bold text-stone-400 w-5 text-right select-none">
                   {idx + 1}.
                 </span>
                 <input
                   type="text"
-                  value={stepText}
+                  value={step.text}
                   onChange={(e) => handleStepChange(idx, e.target.value)}
                   placeholder={`Krok ${idx + 1}...`}
                   className="flex-1 px-3.5 py-2.5 text-sm rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-800 text-stone-800 placeholder:text-stone-400 transition-all"
@@ -156,9 +160,18 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, initialGoal }) =
             type="submit"
             className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-stone-900 text-white font-medium hover:bg-stone-800 transition-colors cursor-pointer shadow-sm text-sm"
           >
-            <span>Startuj dzisiejszy cel</span>
+            <span>{isEditing ? 'Zapisz zmiany' : 'Startuj dzisiejszy cel'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
+          {isEditing && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-6 py-3.5 rounded-xl border border-stone-200 text-stone-600 hover:text-stone-900 hover:bg-stone-50 text-sm font-medium transition-colors cursor-pointer"
+            >
+              Anuluj
+            </button>
+          )}
         </div>
 
         <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-stone-50 border border-stone-200/60 text-stone-500 text-xs">

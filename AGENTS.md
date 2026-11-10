@@ -22,9 +22,11 @@ przypadki błędów. Audyt oznacza wyłącznie odczyt i raport bez edycji plikó
 śledzenia jego kroków. Dane aktualnego celu i historia są przechowywane w
 przeglądarce przez `localStorage`.
 
-- `src/App.tsx` — główny przepływ aplikacji i stan celu.
-- `src/components/` — formularz celu, karta celu, historia i nagłówek.
-- `src/storage/goalStorage.ts` — odczyt i zapis danych lokalnych.
+- `src/App.tsx` — tylko układ strony; składa komponenty i hook.
+- `src/hooks/useDailyGoal.ts` — przepływ aplikacji: stan celu, historii i akcje.
+- `src/components/` — formularz celu, karta celu, historia, nagłówek i baner ukończenia.
+- `src/storage/goalStorage.ts` — jedyne miejsce dostępu do `localStorage`.
+- `src/utils/` — czyste funkcje pomocnicze (daty, identyfikatory, postęp celu).
 - `src/types/` — typy celu, kroków i statusów.
 - `src/index.css` — style globalne.
 

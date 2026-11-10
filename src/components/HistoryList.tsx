@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { History, Calendar, ChevronDown, ChevronUp, CheckCircle2, Trash2 } from 'lucide-react';
 import { DailyGoal } from '../types';
+import { formatShortDate } from '../utils/date';
+import { getGoalProgress } from '../utils/goalProgress';
 
 interface HistoryListProps {
   history: DailyGoal[];
@@ -15,19 +17,6 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, onDeleteHisto
       ...prev,
       [id]: !prev[id],
     }));
-  };
-
-  const formatDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return new Intl.DateTimeFormat('pl-PL', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      }).format(date);
-    } catch {
-      return dateStr;
-    }
   };
 
   if (history.length === 0) {
@@ -57,9 +46,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, onDeleteHisto
 
       <div className="space-y-3">
         {history.map((item) => {
-          const completedSteps = item.steps.filter(s => s.completed).length;
-          const totalSteps = item.steps.length;
-          const percent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+          const { completed: completedSteps, total: totalSteps, percent } = getGoalProgress(item);
           const isExpanded = !!expandedIds[item.id];
 
           return (
@@ -75,7 +62,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, onDeleteHisto
                   <div className="flex items-center gap-2 mb-1">
                     <span className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
                       <Calendar className="w-3 h-3 text-stone-400" />
-                      {formatDate(item.date)}
+                      {formatShortDate(item.date)}
                     </span>
                     <span className="text-[11px] font-mono font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
                       {percent}% wykonane
