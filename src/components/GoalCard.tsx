@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Circle, Plus, Check, Trophy, Edit3, Trash2 } from 'lucide-react';
 import { DailyGoal, Step } from '../types';
+import { MAX_STEPS } from '../constants';
 import { createId } from '../utils/ids';
 import { getGoalProgress } from '../utils/goalProgress';
 
@@ -144,7 +145,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
             <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
               Lista kroków
             </h3>
-            {!isAddingStep && (
+            {!isAddingStep && totalCount < MAX_STEPS && (
               <button
                 onClick={() => setIsAddingStep(true)}
                 className="inline-flex items-center gap-1 text-xs font-medium text-stone-700 hover:text-stone-900 transition-colors cursor-pointer"

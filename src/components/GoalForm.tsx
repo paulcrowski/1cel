@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Plus, Trash2, ArrowRight, Lightbulb } from 'lucide-react';
 import { DailyGoal, Step } from '../types';
+import { MAX_STEPS } from '../constants';
 import { createId } from '../utils/ids';
 import { getTodayIso } from '../utils/date';
 
@@ -33,7 +34,7 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
   };
 
   const handleAddStepInput = () => {
-    if (steps.length >= 10) return;
+    if (steps.length >= MAX_STEPS) return;
     setSteps([...steps, newEmptyStep(nextStepIndex.current++)]);
   };
 
@@ -107,7 +108,7 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
               Kroki do celu (zalecane 3–5 kroków)
             </label>
             <span className="text-xs text-stone-400 font-mono">
-              {steps.length}/10
+              {steps.length}/{MAX_STEPS}
             </span>
           </div>
 
@@ -141,7 +142,7 @@ export const GoalForm: React.FC<GoalFormProps> = ({ onSaveGoal, onCancel, initia
           <button
             type="button"
             onClick={handleAddStepInput}
-            disabled={steps.length >= 10}
+            disabled={steps.length >= MAX_STEPS}
             className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
           >
             <Plus className="w-3.5 h-3.5" />

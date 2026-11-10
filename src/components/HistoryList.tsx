@@ -54,10 +54,13 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, onDeleteHisto
               key={item.id}
               className="bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden transition-all"
             >
-              <div
-                onClick={() => toggleExpand(item.id)}
-                className="p-4 flex items-center justify-between gap-3 cursor-pointer hover:bg-stone-50/80 transition-colors"
-              >
+              <div className="flex items-center hover:bg-stone-50/80 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => toggleExpand(item.id)}
+                  aria-expanded={isExpanded}
+                  className="flex-1 min-w-0 p-4 flex items-center gap-3 text-left cursor-pointer"
+                >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
@@ -73,25 +76,24 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, onDeleteHisto
                   </h4>
                 </div>
 
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteHistoryItem(item.id);
-                    }}
-                    title="Usuń wpis z historii"
-                    className="p-1.5 text-stone-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  <div className="p-1.5 text-stone-400">
-                    {isExpanded ? (
-                      <ChevronUp className="w-4 h-4" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" />
-                    )}
-                  </div>
+                <div className="p-1.5 text-stone-400">
+                  {isExpanded ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
                 </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onDeleteHistoryItem(item.id)}
+                  title="Usuń wpis z historii"
+                  aria-label={`Usuń wpis z historii: ${item.title}`}
+                  className="m-2 ml-0 p-1.5 text-stone-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
 
               {isExpanded && (

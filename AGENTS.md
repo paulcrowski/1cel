@@ -27,6 +27,7 @@ przeglądarce przez `localStorage`.
 - `src/components/` — formularz celu, karta celu, historia, nagłówek i baner ukończenia.
 - `src/storage/goalStorage.ts` — jedyne miejsce dostępu do `localStorage`.
 - `src/utils/` — czyste funkcje pomocnicze (daty, identyfikatory, postęp celu).
+- `src/constants.ts` — stałe aplikacji (np. limit kroków).
 - `src/types/` — typy celu, kroków i statusów.
 - `src/index.css` — style globalne.
 
